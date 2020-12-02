@@ -1,3 +1,5 @@
 module.exports = {
-  // publicPath: '/traffic-lights-vue/',
+  publicPath: process.env.NODE_ENV === 'production'
+    ? '//traffic-lights-vue//'
+    : '/'
 }
