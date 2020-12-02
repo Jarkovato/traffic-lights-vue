@@ -1,4 +1,3 @@
 module.exports = {
-  publicPath: '/traffic-lights-vue/',
-  
+  // publicPath: '/traffic-lights-vue/',
 }
