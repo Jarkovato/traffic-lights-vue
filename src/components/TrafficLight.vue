@@ -46,6 +46,7 @@ export default {
     };
   },
   methods: {
+    //получает таймер обратного отсчета
     getTimeOut(dur) {
       this.timeout = dur;
       let interval = setInterval(()=>{
@@ -54,11 +55,19 @@ export default {
       setTimeout(()=> {
         clearInterval(interval)
       }, dur * 1000)
+    },
+    //менят цвет по заданным параметрам
+    changeColors(color) {
+      let controller = new Controller();
+
+      controller.trigger(color, (state) => {
+      this.current = state.name;
+      this.getTimeOut(state.dur);
+      if (this.$route.name != state.name) this.$router.push(state.name);
+      })
     }
   },
   mounted() {
-    //вызывает переключатель
-    let controller = new Controller();
     //инициализирует состояния
     let red = new State("red", 10);
     let yellowToRed = new State("yellow", 3);
@@ -71,25 +80,13 @@ export default {
     yellowToGreen.next = red;
     //переключает цвет
     if (this.start == 'red') {
-    controller.trigger(red, (state) => {
-      this.current = state.name;
-      this.getTimeOut(state.dur);
-      if (this.$route.name != state.name) this.$router.push(state.name);
-    });
+      this.changeColors(red);
     }
     else if (this.start == 'yellow') {
-    controller.trigger(yellowToRed, (state) => {
-      this.current = state.name;
-      this.getTimeOut(state.dur);
-      if (this.$route.name != state.name) this.$router.push(state.name);
-    });
+      this.changeColors(yellowToRed);
     }
     else if (this.start == 'green') {
-    controller.trigger(green, (state) => {
-      this.current = state.name;
-      this.getTimeOut(state.dur);
-      if (this.$route.name != state.name) this.$router.push(state.name);
-    });
+      this.changeColors(green);
     }
     
   },
