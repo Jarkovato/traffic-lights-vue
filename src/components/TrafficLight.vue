@@ -1,134 +1,102 @@
 <template>
   <div class="container">
-    <!-- <h1>start:{{ this.start }}</h1> -->
-    <div class="timer">
-      Сейчас горит {{ russianCurrentColor }} цвет, через
-      <b>{{ currentTime }}</b> сек будет гореть {{ russianNextColor }}
+    <!-- <div class="timer">
+      Сейчас горит {{ currentColor }} цвет, переключение через <b>{{ timeOut }}</b> секунд
     </div>
     <div class="traffic-light">
-      <div :class="currentColor === 'red' ? 'circle' : 'circle disabled'"></div>
       <div
-        :class="currentColor === 'yellow' ? 'circle' : 'circle disabled'"
+        :class="[circle.active ? 'circle' : 'circle disabled', circle.animated ? 'animated': '']"
+        v-for="circle in circles"
+        :key="circle.id"
       ></div>
-      <div
-        :class="currentColor === 'green' ? 'circle' : 'circle disabled'"
-      ></div>
+    </div> -->
+    <h1>До переключения осталось {{ timeout }} секунд</h1>
+    <div class="traffic-light">
+      <div class="circle" :class="{ active: current == 'red' }"></div>
+      <div class="circle" :class="{ active: current == 'yellow' }"></div>
+      <div class="circle" :class="{ active: current == 'green' }"></div>
     </div>
   </div>
 </template>
 
 <script>
+//класс состояния
+class State {
+  constructor(name, dur, next) {
+    this.name = name;
+    this.dur = dur;
+    this.next = next;
+  }
+}
+//переключает цвета
+class Controller {
+  trigger(state, callback) {
+    callback(state);
+    setTimeout(() => {
+      this.trigger(state.next, callback);
+    }, state.dur * 1000);
+  }
+}
 export default {
   props: ["start"],
   data() {
     return {
-      colors: {
-        red: "red",
-        yellow: "yellow",
-        green: "green",
-      },
-      currentColor: "",
-      nextColor: "",
-      currentTime: "",
+      current: "red",
+      timeout: ''
     };
   },
   methods: {
-    getInterval() {
-      let interval = setInterval(() => {
-        this.changeColors();
-      }, 31000);
-      setTimeout(()=>{
+    getTimeOut(dur) {
+      this.timeout = dur;
+      let interval = setInterval(()=>{
+        this.timeout --;
+      }, 1000)
+      setTimeout(()=> {
         clearInterval(interval)
-      }, 3100000)
-    },
-    //переключает цвета по порядку
-    changeColors() {
-      const red = this.colors.red;
-      const yellow = this.colors.yellow;
-      const green = this.colors.green;
-      if (this.start === red) {
-        this.changeColor(10, red, yellow, 0);
-        this.changeColor(3, yellow, green, 10000);
-        this.changeColor(15, green, yellow, 13000);
-        this.changeColor(3, yellow, red, 28000);
-        setTimeout(() => {
-          this.start = red;
-        }, 30000);
-      } else if (this.start === yellow) {
-        this.changeColor(3, yellow, green, 0);
-        this.changeColor(15, green, yellow, 3000);
-        this.changeColor(3, yellow, red, 18000);
-        this.changeColor(10, red, yellow, 21000);
-        setTimeout(() => {
-          this.start = yellow;
-        }, 30000);
-      } else if (this.start === green) {
-        this.changeColor(15, green, yellow, 0);
-        this.changeColor(3, yellow, red, 15000);
-        this.changeColor(10, red, yellow, 18000);
-        this.changeColor(3, yellow, green, 28000);
-        setTimeout(() => {
-          this.start = green;
-        }, 30000);
-      }
-    },
-    //переключает цвет
-    changeColor(timer, color, newColor, seconds) {
-      setTimeout(() => {
-        //добавляет роут
-        this.$router.push(color);
-        //обновляет текущее время
-        this.currentTime = timer;
-        this.setTimer(timer);
-        //задает цвета
-        this.currentColor = color;
-        this.nextColor = newColor;
-      }, seconds);
-    },
-    //считает обратный отсчет
-    setTimer(sec) {
-      let seconds = sec - 1;
-      const timer = setInterval(() => {
-        this.currentTime = seconds;
-        seconds--;
-      }, 1000);
-      setTimeout(() => {
-        clearInterval(timer);
-      }, seconds * 1000);
-    },
+      }, dur * 1000)
+    }
   },
-  //вызывает переключение цветов
   mounted() {
-    //первый запуск светофора
-    this.changeColors();
-    this.getInterval();
-  },
-  computed: {
-    // переводит на русский для заголовков текущего цвета
-    russianCurrentColor() {
-      let result;
-      if (this.currentColor === "red") result = "красный";
-      else if (this.currentColor === "yellow") result = "желтый";
-      else if (this.currentColor === "green") result = "зеленый";
-      return result;
-    },
-    // переводит на русский для заголовков следующего цвета
-    russianNextColor() {
-      let result;
-      if (this.nextColor === "red") result = "красный";
-      else if (this.nextColor === "yellow") result = "желтый";
-      else if (this.nextColor === "green") result = "зеленый";
-      return result;
-    },
+    //вызывает переключатель
+    let controller = new Controller();
+    //инициализирует состояния
+    let red = new State("red", 10);
+    let yellowToRed = new State("yellow", 3);
+    let yellowToGreen = new State("yellow", 3);
+    let green = new State("green", 15);
+    //задает следующий цвет
+    red.next = yellowToRed;
+    yellowToRed.next = green;
+    green.next = yellowToGreen;
+    yellowToGreen.next = red;
+    //переключает цвет
+    if (this.start == 'red') {
+    controller.trigger(red, (state) => {
+      this.current = state.name;
+      this.getTimeOut(state.dur);
+      if (this.$route.name != state.name) this.$router.push(state.name);
+    });
+    }
+    else if (this.start == 'yellow') {
+    controller.trigger(yellowToRed, (state) => {
+      this.current = state.name;
+      this.getTimeOut(state.dur);
+      if (this.$route.name != state.name) this.$router.push(state.name);
+    });
+    }
+    else if (this.start == 'green') {
+    controller.trigger(green, (state) => {
+      this.current = state.name;
+      this.getTimeOut(state.dur);
+      if (this.$route.name != state.name) this.$router.push(state.name);
+    });
+    }
+    
   },
 };
 </script>
 
 <style scoped>
-/* h1 {
-  position: fixed;
-  left: 150px;
-} */
 .timer {
   margin: 30px 0px;
 }
@@ -161,6 +129,7 @@ export default {
   border: 2px solid #000;
   border-radius: 50%;
   margin-bottom: 10px;
+  opacity: 0.3;
 }
 .circle:nth-child(1) {
   background-color: #f44336;
@@ -171,7 +140,21 @@ export default {
 .circle:nth-child(3) {
   background-color: #4caf50;
 }
-.disabled {
-  filter: opacity(0.3);
+.active {
+  opacity: 1;
+}
+.animated {
+  animation: blink 1s linear 3;
+}
+@keyframes blink {
+  from {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.3;
+  }
 }
 </style>
