@@ -2,9 +2,27 @@
   <div class="container">
     <h1>До переключения осталось {{ timeout }} секунд</h1>
     <div class="traffic-light">
-      <div class="circle" :class="{ active: current == 'red', animated: current == 'red' && timeout < 4 }"></div>
-      <div class="circle" :class="{ active: current == 'yellow', animated: current == 'yellow' && timeout < 4 }"></div>
-      <div class="circle" :class="{ active: current == 'green', animated: current == 'green' && timeout < 4 }"></div>
+      <div
+        class="circle"
+        :class="{
+          active: current == 'red',
+          animated: current == 'red' && timeout < 4,
+        }"
+      ></div>
+      <div
+        class="circle"
+        :class="{
+          active: current == 'yellow',
+          animated: current == 'yellow' && timeout < 4,
+        }"
+      ></div>
+      <div
+        class="circle"
+        :class="{
+          active: current == 'green',
+          animated: current == 'green' && timeout < 4,
+        }"
+      ></div>
     </div>
   </div>
 </template>
@@ -32,30 +50,30 @@ export default {
   data() {
     return {
       current: "red",
-      timeout: ''
+      timeout: "",
     };
   },
   methods: {
     //получает таймер обратного отсчета
     getTimeOut(dur) {
       this.timeout = dur;
-      let interval = setInterval(()=>{
-        this.timeout --;
-      }, 1000)
-      setTimeout(()=> {
-        clearInterval(interval)
-      }, dur * 1000)
+      let interval = setInterval(() => {
+        this.timeout--;
+      }, 1000);
+      setTimeout(() => {
+        clearInterval(interval);
+      }, dur * 1000);
     },
     //менят цвет по заданным параметрам
     changeColors(color) {
       let controller = new Controller();
 
       controller.trigger(color, (state) => {
-      this.current = state.name;
-      this.getTimeOut(state.dur);
-      if (this.$route.name != state.name) this.$router.push(state.name);
-      })
-    }
+        this.current = state.name;
+        this.getTimeOut(state.dur);
+        if (this.$route.name != state.name) this.$router.push(state.name);
+      });
+    },
   },
   mounted() {
     //инициализирует состояния
@@ -69,31 +87,14 @@ export default {
     green.next = yellowToGreen;
     yellowToGreen.next = red;
     //переключает цвет
-    if (this.start == 'red') {
+    if (this.start == "red") {
       this.changeColors(red);
-    }
-    else if (this.start == 'yellow') {
+    } else if (this.start == "yellow") {
       this.changeColors(yellowToRed);
-    }
-    else if (this.start == 'green') {
+    } else if (this.start == "green") {
       this.changeColors(green);
     }
-    //берем данные хранилища
-    if (localStorage.current) {
-      this.current = localStorage.current;
-    }
-     if (localStorage.timeout) {
-      this.timeout = localStorage.timeout;
-    }
   },
-  watch: {
-    current(newCurrent) {
-      localStorage.current = newCurrent;
-    },
-    timeout(newTimeout) {
-      localStorage.timeout = newTimeout;
-    }
-  }
 };
 </script>
 
