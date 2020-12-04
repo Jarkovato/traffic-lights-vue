@@ -78,7 +78,22 @@ export default {
     else if (this.start == 'green') {
       this.changeColors(green);
     }
+    //берем данные хранилища
+    if (localStorage.current) {
+      this.current = localStorage.current;
+    }
+     if (localStorage.timeout) {
+      this.timeout = localStorage.timeout;
+    }
   },
+  watch: {
+    current(newCurrent) {
+      localStorage.current = newCurrent;
+    },
+    timeout(newTimeout) {
+      localStorage.timeout = newTimeout;
+    }
+  }
 };
 </script>
 
