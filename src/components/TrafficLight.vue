@@ -1,20 +1,10 @@
 <template>
   <div class="container">
-    <!-- <div class="timer">
-      Сейчас горит {{ currentColor }} цвет, переключение через <b>{{ timeOut }}</b> секунд
-    </div>
-    <div class="traffic-light">
-      <div
-        :class="[circle.active ? 'circle' : 'circle disabled', circle.animated ? 'animated': '']"
-        v-for="circle in circles"
-        :key="circle.id"
-      ></div>
-    </div> -->
     <h1>До переключения осталось {{ timeout }} секунд</h1>
     <div class="traffic-light">
-      <div class="circle" :class="{ active: current == 'red' }"></div>
-      <div class="circle" :class="{ active: current == 'yellow' }"></div>
-      <div class="circle" :class="{ active: current == 'green' }"></div>
+      <div class="circle" :class="{ active: current == 'red', animated: current == 'red' && timeout < 4 }"></div>
+      <div class="circle" :class="{ active: current == 'yellow', animated: current == 'yellow' && timeout < 4 }"></div>
+      <div class="circle" :class="{ active: current == 'green', animated: current == 'green' && timeout < 4 }"></div>
     </div>
   </div>
 </template>
@@ -88,7 +78,6 @@ export default {
     else if (this.start == 'green') {
       this.changeColors(green);
     }
-    
   },
 };
 </script>
